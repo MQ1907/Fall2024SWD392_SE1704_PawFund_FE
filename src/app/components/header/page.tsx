@@ -1,7 +1,12 @@
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  
     const [showTopBar, setShowTopBar] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
     const controlHeader = () => {
@@ -15,6 +20,10 @@ const Header = () => {
         }
       };
     
+    const handleClick = (path: string) => {
+    router.push(path);
+    };
+       
       useEffect(() => {
         if (typeof window !== "undefined") {
           window.addEventListener("scroll", controlHeader);
@@ -69,34 +78,83 @@ const Header = () => {
             <Image src="/images/logo.png" alt="" width={106} height={106} />
           </li>
           <li
-           
+            className={`cursor-pointer ${
+              pathname === "/"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={() => handleClick("/")}
           >
-          
+            HOMEPAGE
+          </li>
+          <li
+            className={`cursor-pointer ${
+              pathname === "/adopt"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={() => handleClick("/adopt")}
+          >
             ADOPT
           </li>
           <li
-            
+            className={`cursor-pointer ${
+              pathname === "/donate"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={() => handleClick("/donate")}
           >
             DONATE
           </li>
           <li
-           
+            className={`cursor-pointer ${
+              pathname === "/volunteer"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={() => handleClick("/volunteer")}
           >
             VOLUNTEER
           </li>
           <li
-           
+            className={`cursor-pointer ${
+              pathname === "/news"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={() => handleClick("/news")}
           >
             NEWS
           </li>
           <li
-            
+            className={`cursor-pointer ${
+              pathname === "/contact"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={() => handleClick("/contact")}
           >
             CONTACT
           </li>
-          <li
-           
-          ></li>
+
+          {/* <li
+            className={`cursor-pointer ${
+              pathname === "/admin"
+                ? "text-[#D94E66]"
+                : "text-black hover:text-[#D94E66]"
+            }`}
+            onClick={
+              role === "ADMIN"
+                ? handleAdminClick
+                // : role === "SHELTER_STAFF"
+                ? handleShelterStaffClick
+                : undefined
+            }
+          >
+            {role === "ADMIN" && "ADMIN DASHBOARD"}
+            {role === "SHELTER_STAFF" && "SHELTERSTAFF DASHBOARD"}
+          </li> */}
         </ul>
       </div>
     </div>
