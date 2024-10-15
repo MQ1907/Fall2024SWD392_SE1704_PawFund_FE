@@ -213,6 +213,7 @@ const Header = () => {
             CONTACT
           </li>
           <li
+
             className={`cursor-pointer ${
               pathname === "/admin"
                 ? "text-[#D94E66]"
