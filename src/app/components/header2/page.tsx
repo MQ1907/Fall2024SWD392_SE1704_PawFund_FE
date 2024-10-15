@@ -3,12 +3,12 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 // import { logout } from "../../../lib/features/auth/authSlice"; 
-import { useAppDispatch, useAppSelector } from "@/lib/hook";
+
 import { usePathname } from 'next/navigation'; // Import usePathname từ Next.js
 const Header2 = () => {
   const router = useRouter(); 
-  const dispatch = useAppDispatch(); 
-  const token = useAppSelector((state) => state.auth.token); 
+//   const dispatch = useAppDispatch(); 
+//   const token = useAppSelector((state) => state.auth.token); 
   const pathname = usePathname(); // Lấy đường dẫn hiện tại
   
   const [showTopBar, setShowTopBar] = useState(true);
@@ -34,9 +34,9 @@ const Header2 = () => {
   const handleClick = (path: string) => {
     router.push(path); // Điều hướng đến trang mới
   };
-  const handleLoginClick = () => {
-    router.push("/signin");
-  };
+//   const handleLoginClick = () => {
+//     router.push("/signin");
+//   };
 //   const handleLogoutClick = () => {
 //     dispatch(logout());
 //     router.push("/signin");
@@ -69,14 +69,14 @@ const Header2 = () => {
           <li>
             <Image src="/images/vietnam.png" alt="" width={30} height={30} />
           </li>
-          <li>
+          {/* <li>
             <button 
             //   onClick={token ? handleLogoutClick : handleLoginClick}
               className="rounded-md border border-black px-4 text-white hover:text-[#D94E66] hover:bg-white"
             >
               {token ? "Logout" : "Login"} 
             </button>
-          </li>
+          </li> */}
         </ul>
       </div>
       <div

@@ -2,7 +2,8 @@
 import React from "react";
 
 import Header2 from "../components/header2/page";
-import ShelterStaffLayout from "@/ShelterStaffLayout";
+import ShelterStaffLayout from "../ShelterStaffLayout";
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <ShelterStaffLayout>
