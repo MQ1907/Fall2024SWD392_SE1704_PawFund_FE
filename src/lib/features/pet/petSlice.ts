@@ -66,7 +66,7 @@ const petSlice = createSlice({
       })
       .addCase(createPet.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.pets.push(action.payload); // Add the new pet to the pets array
+        state.pets.push(action.payload); 
       })
       .addCase(createPet.rejected, (state, action) => {
         state.status = "failed";

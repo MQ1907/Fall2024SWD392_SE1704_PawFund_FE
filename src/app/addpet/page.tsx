@@ -1,13 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { Button, Form, Input, Select, Switch, message } from "antd";
-import { createPet } from "../../lib/features/pet/petSlice"; // Import the createPet action
+import { createPet } from "../../lib/features/pet/petSlice"; 
 import { useAppDispatch, useAppSelector } from "@/lib/hook";
 
 const { TextArea } = Input;
 
 const AddPet: React.FC = () => {
-  // const [rescueDate, setRescueDate] = useState("");
   const dispatch = useAppDispatch();
   const { status, error } = useAppSelector((state) => state.pets);
   const [petData, setPetData] = useState({
@@ -97,6 +96,7 @@ const AddPet: React.FC = () => {
             onChange={(value) => setPetData({ ...petData, gender: value })}
             value={petData.gender}
           >
+            <Select.Option value="Default">Default</Select.Option>
             <Select.Option value="Female">Female</Select.Option>
             <Select.Option value="Male">Male</Select.Option>
           </Select>
