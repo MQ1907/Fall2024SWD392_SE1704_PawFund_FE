@@ -7,7 +7,7 @@ export const makeStore = () => {
     reducer: {
         auth: authReducer,
          pets: petReducer,
-        //  healthChecks: healthCheckReducer,
+         healthChecks: healthCheckReducer,
     }
   })
 }
