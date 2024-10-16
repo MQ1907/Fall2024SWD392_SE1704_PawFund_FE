@@ -119,12 +119,12 @@ function ShelterStaff() {
       key: "button",
       render: (text: string, record: { _id: string }) => (
         <>
-          <Button
+          {/* <Button
             style={{ backgroundColor: "red", color: "white", marginRight: 8 }}
             onClick={() => confirmDelete(record._id)}
           >
             Delete
-          </Button>
+          </Button> */}
           {/* <Button
         style={{ backgroundColor: "blue", color: "white" }}
         onClick={() => handleUpdatePet(record._id)}
