@@ -79,11 +79,6 @@ function ShelterStaff() {
       key: "rescueDate",
     },
     {
-      title: "Pet Code",
-      dataIndex: "petCode",
-      key: "petCode",
-    },
-    {
       title: "Description",
       dataIndex: "description",
       key: "description",
@@ -103,11 +98,11 @@ function ShelterStaff() {
       dataIndex: "age",
       key: "age",
     },
-    {
-      title: "Shelter",
-      dataIndex: "shelterId",
-      key: "shelterId",
-    },
+    // {
+    //   title: "Shelter Location",
+    //   dataIndex: "shelterLocation",
+    //   key: "shelterLocation",
+    // },
     {
       title: "Delivery Status",
       dataIndex: "deliveryStatus",
@@ -119,18 +114,12 @@ function ShelterStaff() {
       key: "button",
       render: (text: string, record: { _id: string }) => (
         <>
-          {/* <Button
+          <Button
             style={{ backgroundColor: "red", color: "white", marginRight: 8 }}
             onClick={() => confirmDelete(record._id)}
           >
             Delete
-          </Button> */}
-          {/* <Button
-        style={{ backgroundColor: "blue", color: "white" }}
-        onClick={() => handleUpdatePet(record._id)}
-      >
-        Update
-      </Button> */}
+          </Button>
         </>
       ),
     },
