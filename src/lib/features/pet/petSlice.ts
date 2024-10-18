@@ -5,25 +5,19 @@ import axios from "axios";
 export const createPet = createAsyncThunk(
   "pet/create",
   async (petData: {
-    shelterId: string;
-    petCode: string;
+    shelterLocation: string;
     name: string;
     description: string;
     image: string;
     color: string;
     breed: string;
     age: number;
-    isVacinted: boolean;
-    isVerified: boolean;
-    deliveryStatus: string;
-    isAdopted: boolean;
     note: string;
     rescueBy: string;
     rescueFee: number;
     locationFound: string;
-    petStatus: string;
-    gender:string;
-    rescueDate:Date;
+
+    gender: string;
   }) => {
     try {
       const response = await axios.post(
@@ -74,14 +68,18 @@ export const fetchPetById = createAsyncThunk(
   "pet/fetchById",
   async (id: string, { rejectWithValue }) => {
     try {
-      console.log('Fetching pet with ID:', id);
+      console.log("Fetching pet with ID:", id);
       // Update the URL to use _id
-      const response = await axios.get(`http://localhost:8000/pet/find-by-id/${id}`);
-      console.log('API Response:', response.data);
+      const response = await axios.get(
+        `http://localhost:8000/pet/find-by-id/${id}`
+      );
+      console.log("API Response:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error('API Error:', error);
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch pet");
+      console.error("API Error:", error);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch pet"
+      );
     }
   }
 );
@@ -124,16 +122,25 @@ const saveSentToShelter = (state: string[]) => {
   }
 };
 export const updatePetDelivery = createAsyncThunk(
-  'pets/updatePetStatus',
-  async ({ petId, deliveryStatus }: { petId: string; deliveryStatus: string }) => {
-    await axios.put(`http://localhost:8000/pet/update-delivery-status/${petId}`, {
-      deliveryStatus,
-    });
+  "pets/updatePetStatus",
+  async ({
+    petId,
+    deliveryStatus,
+  }: {
+    petId: string;
+    deliveryStatus: string;
+  }) => {
+    await axios.put(
+      `http://localhost:8000/pet/update-delivery-status/${petId}`,
+      {
+        deliveryStatus,
+      }
+    );
     return { petId, deliveryStatus };
   }
 );
 interface PetState {
-  pets: any[]; 
+  pets: any[];
   currentPet: any | null; // Add this line
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
@@ -172,7 +179,7 @@ const petSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-    //Create Pet
+      //Create Pet
       .addCase(createPet.pending, (state) => {
         state.status = "loading";
       })
@@ -191,15 +198,15 @@ const petSlice = createSlice({
       })
       .addCase(fetchPets.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.pets = action.payload; 
+        state.pets = action.payload;
       })
       .addCase(fetchPets.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message || "Failed to fetch pets";
       })
-      
+
       //Fetch Pet By Status
-        .addCase(fetchPetsByStatus.pending, (state) => {
+      .addCase(fetchPetsByStatus.pending, (state) => {
         state.status = "loading";
       })
       .addCase(fetchPetsByStatus.fulfilled, (state, action) => {
@@ -226,19 +233,19 @@ const petSlice = createSlice({
       })
       .addCase(fetchPetById.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload as string || "Failed to fetch pet";
+        state.error = (action.payload as string) || "Failed to fetch pet";
       })
       //delete pet
       .addCase(deletePet.pending, (state) => {
-        state.status = "loading"; 
+        state.status = "loading";
       })
       .addCase(deletePet.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.pets = state.pets.filter((pet) => pet._id !== action.meta.arg); 
+        state.pets = state.pets.filter((pet) => pet._id !== action.meta.arg);
       })
       .addCase(deletePet.rejected, (state, action) => {
         state.status = "failed";
-        state.error = (action.payload as string) || "Failed to delete pet"; 
+        state.error = (action.payload as string) || "Failed to delete pet";
       });
   },
 });
@@ -247,8 +254,9 @@ import { RootState } from "../../store";
 export const selectPendingPets = (state: RootState) =>
   state.pets.pets.filter((pet) => pet.deliveryStatus === "PENDING");
 export const selectCompletedPets = (state: RootState) =>
-  state.pets.pets.filter((pet) => pet.deliveryStatus === 'COMPLETED');
-export const { clearError, setPets, removePet,updatePetStatus } = petSlice.actions;
+  state.pets.pets.filter((pet) => pet.deliveryStatus === "COMPLETED");
+export const { clearError, setPets, removePet, updatePetStatus } =
+  petSlice.actions;
 
 // Export the reducer
 export default petSlice.reducer;
