@@ -18,22 +18,22 @@ function PetManagement() {
     }
   }, [petsStatus, dispatch]);
 
-  // const handleDelete = (petId: string) => {
-  //   dispatch(deletePet(petId));
-  // };
+  const handleDelete = (petId: string) => {
+    dispatch(deletePet(petId));
+  };
 
-  // const confirmDelete = (petId: string) => {
-  //   Modal.confirm({
-  //     title: "Bạn có chắc chắn muốn xóa con pet này không?",
-  //     okText: "Đồng ý",
-  //     okType: "danger",
-  //     cancelText: "Hủy",
-  //     onOk() {
-  //       handleDelete(petId); // Gọi hàm xóa pet
-  //       message.success("Đã xóa con pet thành công!");
-  //     },
-  //   });
-  // };
+  const confirmDelete = (petId: string) => {
+    Modal.confirm({
+      title: "Bạn có chắc chắn muốn xóa con pet này không?",
+      okText: "Đồng ý",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk() {
+        handleDelete(petId); // Gọi hàm xóa pet
+        message.success("Đã xóa con pet thành công!");
+      },
+    });
+  };
 
   const columns = [
     {
@@ -61,11 +61,6 @@ function PetManagement() {
       key: "rescueDate",
     },
     {
-      title: "Pet Code",
-      dataIndex: "petCode",
-      key: "petCode",
-    },
-    {
       title: "Description",
       dataIndex: "description",
       key: "description",
@@ -85,28 +80,28 @@ function PetManagement() {
       dataIndex: "age",
       key: "age",
     },
-    {
-      title: "Shelter Id",
-      dataIndex: "shelterId",
-      key: "shelterId",
-    },
+    // {
+    //   title: "Shelter Location",
+    //   dataIndex: "shelterLocation",
+    //   key: "shelterLocation",
+    // },
     {
       title: "Delivery Status",
       dataIndex: "deliveryStatus",
       key: "deliveryStatus",
     },
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (text: string, record: { _id: string }) => (
-    //     <Button
-    //       style={{ backgroundColor: "red", color: "white" }}
-    //       onClick={() => confirmDelete(record._id)}
-    //     >
-    //       Delete
-    //     </Button>
-    //   ),
-    // },
+    {
+      title: "Action",
+      key: "action",
+      render: (text: string, record: { _id: string }) => (
+        <Button
+          style={{ backgroundColor: "red", color: "white" }}
+          onClick={() => confirmDelete(record._id)}
+        >
+          Xóa
+        </Button>
+      ),
+    },
   ];
 
   return (

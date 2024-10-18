@@ -1,111 +1,62 @@
 "use client";
 import Image from "next/image";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../lib/hook"; // Import hooks
+import { fetchPetsByStatus } from "../../lib/features/pet/petSlice"; // Đường dẫn đến file petSlice
+import Link from "next/link";
 
 const Adopt = () => {
-  const petData2 = [
-    {
-      id: 1,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet1.jpeg",
-    },
-    {
-      id: 2,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet2.jpeg",
-    },
-    {
-      id: 3,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet3.jpeg",
-    },
-    {
-      id: 4,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
-    {
-      id: 5,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
+  const router = useRouter();
+  const handleLearnMore = (link: string) => {
+    router.push(link);
+  };
+  const dispatch = useAppDispatch();
+  const { pets, status, error } = useAppSelector((state) => state.pets);
+    const [searchTerm, setSearchTerm] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const petsPerPage = 6;
 
-    {
-      id: 6,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
+  const totalPages = Math.ceil(pets.length / petsPerPage); // Use pets.length
+  const currentPage = Math.floor(currentIndex / petsPerPage) + 1;
 
-    {
-      id: 7,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
+  const goToPage = (page) => {
+    setCurrentIndex((page - 1) * petsPerPage);
+  };
 
-    {
-      id: 8,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
+  const handlePrevClick = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
 
-    {
-      id: 9,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
+  const handleNextClick = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+  const filteredPets = pets.filter(
+    (pet) =>
+      pet.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      pet.deliveryStatus === "COMPLETED"
+  );
 
-    {
-      id: 10,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet4.jpeg",
-    },
-    {
-      id: 11,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet1.jpeg",
-    },
-    {
-      id: 12,
-      name: "Win",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet2.jpeg",
-    },
-  ];
+   const currentPets = filteredPets.slice(
+    currentIndex,
+    currentIndex + petsPerPage
+  );
+
+  useEffect(() => {
+    dispatch(fetchPetsByStatus("Completed"));
+  }, [dispatch]);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "failed") {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="pt-[148px]">
@@ -313,10 +264,14 @@ const Adopt = () => {
         </div>
       </div>
       <div
-        className="w-full bg-cover bg-center relative mt-5"
-        style={{ backgroundImage: "url('/images/rescure.jpg')" }}
+        className="h-[200px] w-full  relative bg-fixed bg-center bg-cover bg-no-repeat flex items-center justify-center"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.33)), url("/images/rescure.jpg")',
+          backgroundSize: "100% 100%",
+        }}
       >
-        <div className="bg-black bg-opacity-50 w-full flex items-center justify-between px-8 py-16">
+        <div className=" bg-opacity-50 w-full flex items-center justify-between px-8 py-16">
           <div>
             <h1 className="text-white text-3xl font-bold ml-[170px]">
               All Rescues
@@ -435,49 +390,127 @@ const Adopt = () => {
                 type="text"
                 className="block w-full border border-red-500 text-gray-700 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 placeholder="Enter Name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
             <div className="flex items-end ml-[100px]">
-              <button className="bg-pink-500 hover:bg-[#008ADF] text-white text-lg font-bold py-3 px-8 rounded-full w-[200px]">
-                Search
+              <button
+                onClick={() => setCurrentIndex(0)}
+                className="bg-pink-500 hover:bg-[#008ADF] text-white text-lg font-bold py-3 px-8 rounded-full w-[200px]"
+              >
+                Search Pet
               </button>
             </div>
           </div>
         </div>
 
         <div>
-          <div className="grid grid-cols-4 gap-6 p-6 w-[1100px] ml-[200px]">
-            {petData2.slice(0, 16).map((pet, index) => (
-              <div
-                key={index}
-                className="bg-[#F6F6F6n] rounded-lg shadow-md p-4"
-              >
-                <Image
-                  src={pet.image}
-                  alt={pet.name}
-                  width={200}
-                  height={200}
-                  className="w-full h-[150px] object-cover rounded-md"
-                />
-                <div className="mt-4">
-                  <h3 className="text-lg font-bold">{pet.name}</h3>
-                  <p className="text-sm text-gray-700">Gender: {pet.gender}</p>
-                  <p className="text-sm text-gray-700">Age: {pet.age}</p>
-                  <p className="text-sm text-gray-700">
-                    Vaccination: {pet.vaccination}
-                  </p>
-                </div>
+           <div className="grid grid-cols-3 gap-x-[15%] gap-y-[5%] p-6 h-full ml-[300px] my-[80px] w-[1000px]">
+      {currentPets.length > 0 ? (
+        currentPets.map((pet) => (
+          <Link href={`/pet-detail/${pet._id}`} key={pet._id}>
+            <div
+              key={pet.petCode}
+              className="bg-[#F5F5F5] shadow-md p-4 h-full w-[280px] transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300"
+            >
+              <img
+                src={pet.image}
+                alt={pet.name}
+                width={200}
+                height={200}
+                className="w-full h-[200px] object-cover"
+              />
+              <div className="mt-2">
+                <h3 className="text-[23px] font-bold">{pet.name}</h3>
               </div>
-            ))}
-          </div>
+              <hr className="h-[2px] w-[50px] bg-[#adacac] my-3" />
+              <div className="flex my-1">
+                <p className="font-semibold">Gender: </p>
+                <p className="px-1">{pet.gender}</p>
+              </div>
+              <hr className="border-t-[1px] border-dashed border-[#adacac]" />
+              <div className="flex my-1">
+                <p className="font-semibold">Age: </p>
+                <p className="px-1">{pet.age}</p>
+              </div>
+              <hr className="border-t-[1px] border-dashed border-[#adacac]" />
+              <div className="flex my-1">
+                <p className="font-semibold">Vaccinated: </p>
+                <p className="px-1">{pet.isVaccinated ? "Yes" : "No"}</p>
+              </div>
+            </div>
+          </Link>
+        ))
+      ) : (
+        <p>No pets found.</p>
+      )}
+    </div>
         </div>
       </div>
+
+      <div className="flex justify-center items-center space-x-2 my-5">
+        <button
+          onClick={handlePrevClick}
+          disabled={currentPage === 1}
+          className={`px-4 py-3 rounded-md ${
+            currentPage === 1
+              ? "bg-[#3B82F6] text-white cursor-not-allowed"
+              : "bg-[#3B82F6] hover:bg-[#D51C63] text-white"
+          }`}
+        >
+          <Image
+            src="/images/arrowleft.png"
+            alt="Logo"
+            width={1000}
+            height={1000}
+            className="w-[20px]"
+          />
+        </button>
+
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            onClick={() => goToPage(index + 1)}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+
+        <button
+          onClick={handleNextClick}
+          disabled={currentPage === totalPages}
+          className={`px-4 py-3 rounded-md ${
+            currentPage === totalPages
+              ? "bg-[#3B82F6] text-white cursor-not-allowed"
+              : "bg-[#3B82F6] hover:bg-[#D51C63] text-white"
+          }`}
+        >
+          <Image
+            src="/images/arrowright.png"
+            alt="Logo"
+            width={1000}
+            height={1000}
+            className="w-[20px]"
+          />
+        </button>
+      </div>
+
       <div
-        className="w-full bg-cover bg-center relative mt-5"
-        style={{ backgroundImage: "url('/images/adopt2.png')" }}
+        className="h-[200px] w-full  relative bg-fixed bg-center bg-cover bg-no-repeat flex items-center justify-center"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.33)), url("/images/adopt2.png")',
+          backgroundSize: "100% 100%",
+        }}
       >
-        <div className="bg-black bg-opacity-50 w-full flex items-center justify-between px-8 py-16">
+        <div className="bg-opacity-50 w-full flex items-center justify-between px-8 py-16">
           <div className="flex-col-reverse">
             <div>
               <h1 className="text-white text-2xl font-medium mt-2 ml-[120px] w-[600px] text-center">
