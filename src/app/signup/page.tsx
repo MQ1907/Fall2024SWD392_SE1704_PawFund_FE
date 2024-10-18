@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { DownOutlined } from "@ant-design/icons";
 import { useAppDispatch, useAppSelector } from "../../lib/hook";
 import { signup } from "../../lib/features/auth/authSlice";
-
+import { Role } from "../enums/role.enum";
 
 const buttonChooseRole = (isHovered: boolean): React.CSSProperties => {
   return {
