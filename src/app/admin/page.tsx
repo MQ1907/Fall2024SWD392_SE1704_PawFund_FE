@@ -1,194 +1,146 @@
 "use client"; // Thêm dòng này để chỉ định đây là Client Component
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../lib/store';
+import { fetchPets, searchPets, updatePetDeliveryStatus } from '../../lib/features/pet/petSlice';
+
 const Admin = () => {
-  const pet = [
-    {
-      id: 1,
-      name: 'Long',
-      age: 6,
-      breed: 'dog',
-      description: 'stupid dog',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 2,
-      name: 'Bobby',
-      age: 4,
-      breed: 'cat',
-      description: 'cute cat',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 3,
-      name: 'Max',
-      age: 5,
-      breed: 'dog',
-      description: 'happy dog',
-      vaccinated: 'no',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 4,
-      name: 'Kitty',
-      age: 3,
-      breed: 'cat',
-      description: 'playful cat',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 5,
-      name: 'Rex',
-      age: 2,
-      breed: 'dog',
-      description: 'loyal dog',
-      vaccinated: 'no',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 6,
-      name: 'Bella',
-      age: 1,
-      breed: 'dog',
-      description: 'friendly dog',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 7,
-      name: 'Coco',
-      age: 1,
-      breed: 'dog',
-      description: 'cute dog',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 8,
-      name: 'Luna',
-      age: 1,
-      breed: 'dog',
-      description: 'playful dog',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 9,
-      name: 'Charlie',
-      age: 1,
-      breed: 'dog',
-      description: 'friendly dog',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 10,
-      name: 'Rocky',
-      age: 1,
-      breed: 'dog',
-      description: 'active dog',
-      vaccinated: 'no',
-      image: 'https://via.placeholder.com/200',
-    },
-    {
-      id: 11,
-      name: 'Daisy',
-      age: 1,
-      breed: 'dog',
-      description: 'lovely dog',
-      vaccinated: 'yes',
-      image: 'https://via.placeholder.com/200',
-    },
-  ];
-  // Trạng thái cho trang hiện tại
-  const [currentPage, setCurrentPage] = useState(1);
-  const petsPerPage = 10;
-  // Tính toán chỉ số bắt đầu và kết thúc
-  const indexOfLastPet = currentPage * petsPerPage;
-  const indexOfFirstPet = indexOfLastPet - petsPerPage;
-  const currentPets = pet.slice(indexOfFirstPet, indexOfLastPet);
-  // Thay đổi trang
-  const nextPage = () => {
-    if (currentPage < Math.ceil(pet.length / petsPerPage)) {
-      setCurrentPage(currentPage + 1);
+  const dispatch = useDispatch<AppDispatch>();
+  const pets = useSelector((state: RootState) => state.pets.filteredPets);
+  const status = useSelector((state: RootState) => state.pets.status);
+  const error = useSelector((state: RootState) => state.pets.error);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchPets());
+  }, [dispatch]);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(searchPets(searchTerm));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      dispatch(searchPets(searchTerm));
     }
   };
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+
+  const handleUpdate = (petId: string) => {
+    setSelectedPetId(petId);
+    setIsModalOpen(true);
+  };
+
+  const handleStatusUpdate = async (status: string) => {
+    if (selectedPetId) {
+      try {
+        await dispatch(updatePetDeliveryStatus({ petId: selectedPetId, deliveryStatus: status })).unwrap();
+        dispatch(fetchPets());
+      } catch (error) {
+        console.error('Failed to update pet delivery status:', error);
+      }
     }
+    setIsModalOpen(false);
   };
-  // Hàm xử lý nút Accept và Decline
-  const handleAccept = (petId) => {
-    console.log(`Accepted pet with ID: ${petId}`);
-  };
-  const handleDecline = (petId) => {
-    console.log(`Declined pet with ID: ${petId}`);
-  };
+
   return (
-    <div className='mt-[148px]'>
-      <div className="flex flex-col border border-gray-300">
-        <div className="flex border-b border-gray-300">
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[100px]">ID</div>
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[300px]">Hình ảnh</div>
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[250px]">Name</div>
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[100px]">Age</div>
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[250px]">Breed</div>
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center flex-1">Description</div>
-          <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[100px]">Vaccinated</div>
-          <div className="p-4 flex items-center justify-center w-[200px]">Accept</div>
+    <div>
+      <h1 className="text-3xl font-semibold text-gray-700 mb-6">Pet Management</h1>
+      <form onSubmit={handleSearch} className="mb-8">
+        <div className="flex">
+          <input
+            type="text"
+            placeholder="Search pets by name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-6 py-2 rounded-r-md hover:bg-blue-600 transition duration-200"
+          >
+            Search
+          </button>
         </div>
-        {currentPets.map((item) => (
-          <React.Fragment key={item.id}>
-            <div className="flex border-b border-gray-300">
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[100px]">{item.id}</div>
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[300px]">
-                <img src={item.image} alt={item.name} className="w-32 h-32 object-cover" />
-              </div>
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[250px]">{item.name}</div>
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[100px]">{item.age}</div>
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[250px]">{item.breed}</div>
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center flex-1">{item.description}</div>
-              <div className="border-r border-gray-300 p-4 flex items-center justify-center w-[100px]">{item.vaccinated}</div>
-              <div className="p-4 flex items-center justify-center w-[200px]">
+      </form>
+
+      {status === 'loading' && <p className="text-center text-gray-600">Loading...</p>}
+      {status === 'failed' && <p className="text-center text-red-500">Error: {error}</p>}
+      {status === 'succeeded' && pets.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white rounded-lg shadow-md">
+            <thead>
+              <tr className="text-left border-b">
+                <th className="py-4 px-6">ID</th>
+                <th className="py-4 px-6">Image</th>
+                <th className="py-4 px-6">Name</th>
+                <th className="py-4 px-6">Age</th>
+                <th className="py-4 px-6">Breed</th>
+                <th className="py-4 px-6">Vaccinated</th>
+                <th className="py-4 px-6">Delivery Status</th>
+                <th className="py-4 px-6">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pets.map((pet, index) => (
+                <tr key={pet._id} className="border-b">
+                  <td className="py-4 px-6">{index + 1}</td>
+                  <td className="py-4 px-6">
+                    <img src={pet.image} alt={pet.name} className="w-20 h-20 object-cover rounded-full" />
+                  </td>
+                  <td className="py-4 px-6">{pet.name}</td>
+                  <td className="py-4 px-6">{pet.age}</td>
+                  <td className="py-4 px-6">{pet.breed}</td>
+                  <td className="py-4 px-6">{pet.isVacinted ? 'Yes' : 'No'}</td>
+                  <td className="py-4 px-6">{pet.deliveryStatus}</td>
+                  <td className="py-4 px-6">
+                    <button
+                      onClick={() => handleUpdate(pet._id)}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition duration-200"
+                    >
+                      Update Status
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {status === 'succeeded' && pets.length === 0 && (
+        <p className="text-center text-gray-600">No pets found matching the search term.</p>
+      )}
+      
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h2 className="text-xl font-bold mb-4">Update Delivery Status</h2>
+            <div className="space-y-3">
+              {['INPROCESS', 'COMPLETED', 'PENDING'].map((status) => (
                 <button
-                  onClick={() => handleAccept(item.id)}
-                  className="bg-green-500 text-white px-2 py-1 rounded mr-2"
+                  key={status}
+                  onClick={() => handleStatusUpdate(status)}
+                  className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
                 >
-                  Accept
+                  {status}
                 </button>
-                <button
-                  onClick={() => handleDecline(item.id)}
-                  className="bg-red-500 text-white px-2 py-1 rounded"
-                >
-                  Decline
-                </button>
-              </div>
+              ))}
             </div>
-          </React.Fragment>
-        ))}
-      </div>
-      {/* Nút điều hướng trang */}
-      <div className="flex justify-between items-center mt-4">
-        <button 
-          onClick={prevPage} 
-          disabled={currentPage === 1}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 flex items-center"
-        >
-          &#9664; {/* Mũi tên trái */}
-        </button>
-        <span className="text-lg">Trang {currentPage} / {Math.ceil(pet.length / petsPerPage)}</span> {/* Hiển thị số trang */}
-        <button 
-          onClick={nextPage} 
-          disabled={currentPage >= Math.ceil(pet.length / petsPerPage)}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 flex items-center"
-        >
-          &#9654; {/* Mũi tên phải */}
-        </button>
-      </div>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="mt-4 w-full bg-gray-300 text-gray-800 py-2 px-4 rounded hover:bg-gray-400 transition duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 export default Admin;
