@@ -3,20 +3,20 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 import { Button, Input, message, Modal, Select } from "antd";
-import { CheckingType, HealthStatus } from "../../enums";
+import {  CheckingTypeVolunteer, HealthStatus } from "../../enums";
 import { createHealthCheck } from "@/lib/features/pet/HealthCheckSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hook";
 import AddPet from "../addpet/page";
 import { jwtDecode } from "jwt-decode";
-import { fetchPets, removePet } from "@/lib/features/pet/petSlice";
+
 import axios from "axios";
+import { fetchPets, removePet } from "@/lib/features/pet/petSlice";
 
 const Volunteer = () => {
   const { pets, status, error,sentToShelter } = useAppSelector((state) => state.pets);
   const [healthCheckCreated, setHealthCheckCreated] = useState<{ [key: string]: boolean }>({});
   //Create Pet
   const [openAddPetModal, setOpenAddPetModal] = useState(false);
-
   const showAddPetModal = () => {
     setOpenAddPetModal(true);
   };
@@ -60,40 +60,44 @@ const Volunteer = () => {
   );
   const [healthStatusDescription, setHealthStatusDescription] = useState("");
   const [note, setNote] = useState("");
-  const [weight, setWeight] = useState<number | undefined>(undefined);
-  const [temperature, setTemperature] = useState<number | undefined>(undefined);
+  // const [weight, setWeight] = useState<number | undefined>(undefined);
+  // const [temperature, setTemperature] = useState<number | undefined>(undefined);
   const [checkingDate, setCheckingDate] = useState("");
   const [checkingBy, setCheckingBy] = useState("");
   const hiddenCheckingBy = checkingBy ? "*".repeat(checkingBy.length) : "";
-  const [checkingType, setCheckingType] = useState<CheckingType | undefined>(
+  const [checkingType, setCheckingType] = useState<CheckingTypeVolunteer | undefined>(
     undefined
   );
   const [role, setRole] = useState<string | null>(null);
   const handleSubmit = async () => {
-    const healthCheckData = {
-      petId,
-      healthStatus: healthStatus ? healthStatus.toString() : "",
-      healthStatusDescription,
-      note,
-      weight,
-      temperature,
-      checkingDate: new Date(checkingDate),
-      checkingBy,
-      checkingType: checkingType ? checkingType.toString() : "",
-    };
-    console.log("Health Check Data:", healthCheckData);
-    try {
-      await dispatch(createHealthCheck(healthCheckData)).unwrap();
-      handleOk(); //
-    } catch (error) {
-      console.error("Error from API:", error);
-      if (error instanceof Error) {
-        alert(`Error: ${error.message}`);
-      } else {
-        alert("Something went wrong");
-      }
-    }
+  const healthCheckData = {
+    petId,
+    healthStatus: healthStatus ? healthStatus.toString() : "",
+    healthStatusDescription,
+    note,
+    checkingDate: new Date(checkingDate),
+    checkingBy,
+    checkingType: checkingType ? checkingType.toString() : "",
   };
+  console.log("Health Check Data:", healthCheckData);
+  setLoading(true);
+  try {
+    await dispatch(createHealthCheck(healthCheckData)).unwrap();
+    setHealthCheckCreated((prev) => ({ ...prev, [petId]: true }));
+    setTimeout(() => { 
+      setLoading(false);
+      handleOk(); // Đóng modal sau khi tạo thành công
+    }, 3000);
+  } catch (error) {
+    console.error("Error from API:", error);
+    if (error instanceof Error) {
+      alert(`Error: ${error.message}`);
+    } else {
+      alert("Something went wrong");
+    }
+    setLoading(false);
+  }
+};
   const [token, setToken] = useState<string | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
   interface DecodedToken {
@@ -106,37 +110,43 @@ const Volunteer = () => {
     if (typeof window !== "undefined") {
       const storedToken = localStorage.getItem("token");
       setToken(storedToken);
-
+  
       if (storedToken) {
         const decodedToken = jwtDecode<DecodedToken>(storedToken);
         const userId = decodedToken.id;
         
         console.log("userId", userId);
-
+  
         setCheckingBy(userId);
         console.log(setCheckingBy);
         const fetchUser = async () => {
           try {
-            const response = await axios.get(
-              `http://localhost:8000/users/${userId}`
-            );
+            const response = await axios.get(`http://localhost:8000/users/${userId}`);
             console.log("User data:", response.data);
-
-          
+  
             setRole(response.data.role);
           } catch (error) {
             console.error("Error fetching user data:", error);
           }
         };
-
+  
         fetchUser();
+      }
+  
+      const storedHealthCheckCreated = localStorage.getItem('healthCheckCreated');
+      if (storedHealthCheckCreated) {
+        setHealthCheckCreated(JSON.parse(storedHealthCheckCreated));
       }
     }
   }, []);
   useEffect(() => {
     dispatch(fetchPets());
   }, [dispatch]);
-
+  useEffect(() => {
+    if (hasHydrated) {
+      localStorage.setItem('healthCheckCreated', JSON.stringify(healthCheckCreated));
+    }
+  }, [healthCheckCreated, hasHydrated]);
   if (status === "loading") {
     return <div>Loading...</div>;
   }
@@ -148,18 +158,23 @@ const Volunteer = () => {
     setPetId(pet._id); 
     setDisplayPetId("********"); 
     showModal();
-    setHealthCheckCreated((prev) => ({ ...prev, [pet._id]: true }));
-  };
+    
+  }
 
   const handleSendToShelter = async (petId) => {
     try {
       // Cập nhật trạng thái deliveryStatus của pet thành "Pending"
-      await axios.put(`http://localhost:8000/pet/update-delivery-status/${petId}`, {
+      const response = await axios.put(`http://localhost:8000/pet/update-delivery-status/${petId}`, {
         deliveryStatus: "PENDING",
       });
-      message.success('Pet has been sent to shelter !');
-      // Xóa pet khỏi danh sách pets
-      dispatch(removePet(petId));
+  
+      if (response.status === 200) {
+        message.success('Pet has been sent to shelter !');
+        // Xóa pet khỏi danh sách pets
+        dispatch(removePet(petId));
+      } else {
+        throw new Error('Failed to update pet status');
+      }
     } catch (error) {
       console.error("Error updating pet status:", error);
       alert("Failed to send pet to shelter. Please try again.");
@@ -433,15 +448,15 @@ const Volunteer = () => {
                           onChange={(e) => setNote(e.target.value)}
                         />
                       </div>
-                      <div className="flex flex-col">
+                      {/* <div className="flex flex-col">
                         <label className="font-semibold">Weight:</label>
                         <Input
                           type="number"
                           value={weight}
                           onChange={(e) => setWeight(Number(e.target.value))}
                         />
-                      </div>
-                      <div className="flex flex-col">
+                      </div> */}
+                      {/* <div className="flex flex-col">
                         <label className="font-semibold">Temperature:</label>
                         <Input
                           type="number"
@@ -450,7 +465,7 @@ const Volunteer = () => {
                             setTemperature(Number(e.target.value))
                           }
                         />
-                      </div>
+                      </div> */}
                       <div className="flex flex-col">
                         <label className="font-semibold">Checking Date:</label>
                         <Input
@@ -472,11 +487,11 @@ const Volunteer = () => {
                         <Select
                           value={checkingType}
                           onChange={(value) =>
-                            setCheckingType(value as CheckingType)
+                            setCheckingType(value as CheckingTypeVolunteer)
                           }
                           placeholder="Select Checking Type"
                         >
-                          {Object.values(CheckingType).map((type) => (
+                          {Object.values(CheckingTypeVolunteer).map((type) => (
                             <Select.Option key={type} value={type}>
                               {type}
                             </Select.Option>
@@ -501,39 +516,40 @@ const Volunteer = () => {
           {role === 'VOLUNTEER' && (
   <div>
     <div className="grid grid-cols-4 gap-6 p-6 w-[1100px] ml-[200px]">
-      {pets .filter(pet => pet.deliveryStatus === 'INPROCESS' && !sentToShelter.includes(pet._id)).map((pet) => (
-        <div
-          key={pet.petCode}
-          className="bg-[#F6F6F6] rounded-lg shadow-md p-4"
+      {pets.filter(pet => pet.deliveryStatus === 'INPROCESS' && !sentToShelter.includes(pet._id)).map((pet) => (
+  <div
+    key={pet._id}
+    className="bg-[#F6F6F6] rounded-lg shadow-md p-4"
+  >
+    <img
+      src={pet.image}
+      alt={pet.name}
+      width={200}
+      height={200}
+      className="w-full h-[150px] object-cover rounded-md"
+    />
+    <div className="mt-4 flex flex-col items-center justify-center">
+      <h3 className="text-lg font-bold">{pet.name}</h3>
+      {!healthCheckCreated[pet._id] && (
+        <Button
+          onClick={() => handleCreateHealthCheckClick(pet)}
+          className="mt-2"
+          type="primary"
         >
-          <img
-            src={pet.image}
-            alt={pet.name}
-            width={200}
-            height={200}
-            className="w-full h-[150px] object-cover rounded-md"
-          />
-          <div className="mt-4 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-bold">{pet.name}</h3>
-            <Button
-              onClick={() => handleCreateHealthCheckClick(pet)}
-              className="mt-2"
-              type="primary"
-            >
-              Create Health Check
-            </Button>
-            <Button
-             onClick={() => handleSendToShelter(pet._id)}
-              className="mt-2"
-              style={{ backgroundColor: "green", color: "white" }}
-              disabled={!healthCheckCreated[pet._id]}
-            >
-              Send to Shelter
-              
-            </Button>
-          </div>
-        </div>
-      ))}
+          Create Health Check
+        </Button>
+      )}
+      <Button
+        onClick={() => handleSendToShelter(pet._id)}
+        className="mt-2"
+        style={{ backgroundColor: "green", color: "white" }}
+        disabled={!healthCheckCreated[pet._id]}
+      >
+        Send to Shelter
+      </Button>
+    </div>
+  </div>
+))}
     </div>
   </div>
 )}
