@@ -1,201 +1,35 @@
-<<<<<<< HEAD
 "use client";
 import React, { useEffect, useState } from "react";
-import { Table, Spin, Alert, message, Button, Modal, Input, Dropdown, Menu } from "antd";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+  Tab,
+  Tabs,
+  Box,
+  Typography,
+} from "@mui/material";
 import { useAppDispatch, useAppSelector } from "@/lib/hook";
 import {
   fetchAdoptionRequests,
-  // fetchAdoptionRequestsByPetId,
+  fetchAdoptionRequestsByPetId,
   updateAdoptionRequestStatus,
 } from "../../lib/features/adopt/adoptSlice";
 import { fetchPetById } from "@/lib/features/pet/petSlice";
-
-const AdoptableManagement: React.FC<{ petId?: string }> = ({ petId }) => {
-const AdoptableManagement: React.FC<{ petId?: string }> = () => {
-  const dispatch = useAppDispatch();
-  const requestsStatus = useAppSelector((state) => state.adoption.status);
-  const error = useAppSelector((state) => state.adoption.error);
-
-  const [newStatus, setNewStatus] = useState<string | null>(null);
-  const [comment, setComment] = useState<string>("");
-  const [filter, setFilter] = useState<string>("ALL");
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-  const [deleteRequestId, setDeleteRequestId] = useState<string | null>(null);
-  const [filterButtonText, setFilterButtonText] = useState("Manage Requests");
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-
-
-        const requestsWithPetInfo = await Promise.all(
-          requests.map(async (request: any) => {
-            const pet = await dispatch(fetchPetById(request.petId)).unwrap();
-            return {
-              ...request,
-              petName: pet.name,
-              petImage: pet.image,
-            };
-            try {
-              const pet = await dispatch(fetchPetById(request.petId)).unwrap();
-              return {
-                ...request,
-                petName: pet.name,
-                petImage: pet.image,
-              };
-            } catch (error) {
-              console.error(`Failed to fetch pet info for request ${request._id}:`, error);
-              // Removed the fallback object
-            }
-          })
-        );
-
-        setAdoptionRequestsWithPetInfo(requestsWithPetInfo);
-        setAdoptionRequestsWithPetInfo(requestsWithPetInfo.filter(Boolean));
-      } catch (error) {
-        message.error("Failed to fetch adoption requests or pet information.");
-      }
-    fetchRequests();
-  }, [dispatch]);
-
-  const showModal = (requestId: string, status: string) => {
-    setCurrentRequestId(requestId);
-    setNewStatus(status);
-
-          })
-        ).unwrap();
-        setAdoptionRequestsWithPetInfo((prevRequests) =>
-          prevRequests.filter((request) => request._id !== currentRequestId) // Xóa yêu cầu khỏi danh sách "ALL"
-          prevRequests.map((request) =>
-            request._id === currentRequestId ? { ...request, status: "APPROVED", comment } : request
-          )
-        );
-        message.success("Adoption request approved.");
-      }
-
-
-  const handleMenuClick = (e: any) => {
-    setFilter(e.key);
-    setFilterButtonText(getFilterButtonText(e.key));
-  };
-  const getFilterButtonText = (key: string) => {
-    switch (key) {
-      case "ALL":
-        return "ALL ADOPTION REQUESTS";
-      case "APPROVED":
-        return "APPROVED ADOPTIONS";
-      case "REJECTED":
-        return "REJECTED ADOPTIONS";
-      default:
-        return "MANAGE REQUESTS";
-    }
-  };
-
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="ALL">SEE ALL ADOPTION REQUEST</Menu.Item>
-      <Menu.Item key="APPROVED">ADOPTION APPROVED</Menu.Item>
-      <Menu.Item key="REJECTED">ADOPTION REJECTED</Menu.Item>
-      <Menu.Item key="ALL">ALL ADOPTION REQUESTS</Menu.Item>
-      <Menu.Item key="APPROVED"> APPROVED ADOPTIONS</Menu.Item>
-      <Menu.Item key="REJECTED">REJECTED ADOPTIONS</Menu.Item>
-    </Menu>
-  );
-
-  const filteredRequests = adoptionRequestsWithPetInfo.filter((request) => {
-    if (filter === "APPROVED") return request.status === "APPROVED";
-    if (filter === "REJECTED") return request.status === "REJECTED";
-    return true; // ALL
-    return request.status !== "APPROVED" && request.status !== "REJECTED"; // ALL except APPROVED and REJECTED
-  });
-
-  const showDeleteModal = (requestId: string) => {
-    setDeleteRequestId(requestId);
-    setIsDeleteModalVisible(true);
-  };
-  const handleDeleteOk = () => {
-    if (deleteRequestId) {
-      setAdoptionRequestsWithPetInfo((prevRequests) =>
-        prevRequests.filter((request) => request._id !== deleteRequestId)
-      );
-      message.success("Adoption request removed from the list.");
-    }
-    setIsDeleteModalVisible(false);
-  };
-  const handleDeleteCancel = () => {
-    setIsDeleteModalVisible(false);
-  };
-  const columns = [
-    {
-      title: "Pet Name",
-
-      key: "action",
-      render: (_: any, record: { _id: string; status: string }) => (
-        <span>
-          {record.status !== "APPROVED" && record.status !== "CANCELLED" && (
-            <Button
-          {record.status !== "APPROVED" && record.status !== "COMPLETED" && (
-            <button
-              onClick={() => showModal(record._id, "APPROVED")}
-              type="primary"
-              className="bg-green-500 hover:bg-green-600 text-white"
-              style={{ marginRight: 8 }}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg mr-2"
-            >
-              Approve
-            </Button>
-            </button>
-          )}
-          {record.status !== "REJECTED" && record.status !== "CANCELLED" && (
-            <Button
-            <button
-              onClick={() => showModal(record._id, "REJECTED")}
-              className="bg-red-500 hover:bg-red-600 text-white"
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg mr-2"
-            >
-              Reject
-            </Button>
-            </button>
-          )}
-          <button
-            onClick={() => showDeleteModal(record._id)}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-          >
-            Delete
-          </button>
-        </span>
-      ),
-    },
-
-        <>
-          <Dropdown overlay={menu} trigger={['hover']}>
-            <Button>
-              Manage Requests <span>▼</span>
-              {filterButtonText} <span>▼</span>
-            </Button>
-          </Dropdown>
-          <Table dataSource={filteredRequests} columns={columns} rowKey="_id" />
-@@ -202,6 +252,16 @@
-          placeholder="Enter comment for this action"
-        />
-      </Modal>
-      <Modal
-        // title="Confirm Delete"
-        visible={isDeleteModalVisible}
-        onOk={handleDeleteOk}
-        onCancel={handleDeleteCancel}
-        okText="Delete"
-        cancelText="Cancel"
-      >
-        <p className="text-[20px] font-medium">Are you sure you want to remove this adoption request from the list?</p>
-      </Modal>
-    </div>
-  );
-};
-=======
-'use client';
-import React, { useState } from 'react';
-import { Tabs, Tab, Box, Typography } from '@mui/material';
-
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -203,7 +37,7 @@ interface TabPanelProps {
   value: number;
 }
 
-function CustomTabPanel(props: TabPanelProps) {
+function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -223,36 +57,430 @@ function CustomTabPanel(props: TabPanelProps) {
   );
 }
 
-function AdoptableManagement() {
-  const [value, setValue] = useState(0);
+const AdoptableManagement: React.FC<{ petId?: string }> = ({ petId }) => {
+  const dispatch = useAppDispatch();
+  const requestsStatus = useAppSelector((state) => state.adoption.status);
+  const error = useAppSelector((state) => state.adoption.error);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+  const [adoptionRequestsWithPetInfo, setAdoptionRequestsWithPetInfo] =
+    useState<any[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
+  const [comment, setComment] = useState<string>("");
+  const [filter, setFilter] = useState<string>("ALL");
+  const [petAdoptionSummary, setPetAdoptionSummary] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  useEffect(() => {
+    if (petId) {
+      dispatch(fetchAdoptionRequestsByPetId(petId));
+    } else {
+      dispatch(fetchAdoptionRequests());
+    }
+  }, [dispatch, petId]);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const requests = await dispatch(fetchAdoptionRequests()).unwrap();
+
+        const requestsWithPetInfo = await Promise.all(
+          requests.map(async (request: any) => {
+            try {
+              const pet = await dispatch(fetchPetById(request.petId)).unwrap();
+              return {
+                ...request,
+                petName: pet.name,
+                petImage: pet.image,
+              };
+            } catch (error) {
+              console.error(
+                `Failed to fetch pet info for request ${request._id}:`,
+                error
+              );
+            }
+          })
+        );
+
+        const filteredRequests = requestsWithPetInfo.filter(Boolean);
+        setAdoptionRequestsWithPetInfo(filteredRequests);
+
+        // Create summary of adoption requests per pet
+        const summary = filteredRequests.reduce((acc: any, request: any) => {
+          if (!acc[request.petId]) {
+            acc[request.petId] = {
+              petId: request.petId,
+              petName: request.petName,
+              petImage: request.petImage,
+              requestCount: 0,
+            };
+          }
+          acc[request.petId].requestCount++;
+          return acc;
+        }, {});
+
+        setPetAdoptionSummary(Object.values(summary));
+      } catch (error) {
+        setSnackbarMessage(
+          "Failed to fetch adoption requests or pet information."
+        );
+        setSnackbarOpen(true);
+      }
+    };
+
+    fetchRequests();
+  }, [dispatch]);
+
+  const showModal = (requestId: string, status: string) => {
+    setCurrentRequestId(requestId);
+    setNewStatus(status);
+    setIsModalVisible(true);
+  };
+
+  const handleOk = async () => {
+    try {
+      if (newStatus === "REJECTED" || newStatus === "APPROVED") {
+        await dispatch(
+          updateAdoptionRequestStatus({
+            requestId: currentRequestId!,
+            status: newStatus,
+            comment,
+          })
+        ).unwrap();
+        setAdoptionRequestsWithPetInfo((prevRequests) =>
+          prevRequests.map((request) =>
+            request._id === currentRequestId
+              ? { ...request, status: newStatus, comment }
+              : request
+          )
+        );
+        setSnackbarMessage(`Adoption request ${newStatus.toLowerCase()}.`);
+        setSnackbarOpen(true);
+
+        // Update filter and active tab
+        setFilter(newStatus);
+        setActiveTab(1);
+      }
+    } catch (error) {
+      setSnackbarMessage("Failed to update status.");
+      setSnackbarOpen(true);
+    }
+
+    setIsModalVisible(false);
+    setComment("");
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setComment("");
+  };
+
+  const columns = [
+    { field: "petName", headerName: "Pet Name", width: 150 },
+    {
+      field: "petImage",
+      headerName: "Image",
+      width: 100,
+      renderCell: (params: any) => (
+        <img src={params.value} alt="Pet" style={{ width: 60, height: 60 }} />
+      ),
+    },
+    {
+      field: "requestDate",
+      headerName: "Request Date",
+      width: 150,
+      renderCell: (params: any) => new Date(params.value).toLocaleDateString(),
+    },
+    { field: "comment", headerName: "Comment", width: 200 },
+    {
+      field: "adoptionDate",
+      headerName: "Adoption Date",
+      width: 150,
+      renderCell: (params: any) =>
+        params.value ? new Date(params.value).toLocaleDateString() : "",
+    },
+    { field: "status", headerName: "Status", width: 120 },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 200,
+      renderCell: (params: any) => (
+        <>
+          {params.row.status === "PENDING" ? (
+            <>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => showModal(params.row._id, "APPROVED")}
+                style={{ marginRight: 8 }}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => showModal(params.row._id, "REJECTED")}
+              >
+                Reject
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => showViewModal(params.row)}
+            >
+              View
+            </Button>
+          )}
+        </>
+      ),
+    },
+  ];
+
+  const petSummaryColumns = [
+    { field: "petName", headerName: "Pet Name", width: 150 },
+    {
+      field: "petImage",
+      headerName: "Image",
+      width: 100,
+      renderCell: (params: any) => (
+        <img src={params.value} alt="Pet" style={{ width: 60, height: 60 }} />
+      ),
+    },
+    { field: "requestCount", headerName: "Number of Requests", width: 200 },
+  ];
+
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+
+  const showViewModal = (record: any) => {
+    setSelectedRequest(record);
+    setViewModalVisible(true);
+  };
+
+  const getFilteredRequests = (status: string | null) => {
+    if (status === null) {
+      return adoptionRequestsWithPetInfo; // Return all requests
+    }
+    return adoptionRequestsWithPetInfo.filter(
+      (request) => request.status === status
+    );
   };
 
   return (
-    <div className='mt-[148px]'>
-      <Box sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label="adoptable management tabs">
-            <Tab label="SEE ALL ADOPTION REQUESTS" />
-            <Tab label="SEE APPROVED REQUESTS" />
-            <Tab label="SEE REJECTED REQUESTS" />
-          </Tabs>
+    <div style={{ marginTop: 148 }}>
+    <div style={{ marginTop: 50}}>
+      {requestsStatus === "loading" && <CircularProgress />}
+      {requestsStatus === "failed" && (
+        <Alert severity="error">Error: {error}</Alert>
+      )}
+      {requestsStatus === "succeeded" && (
+        <Box sx={{ width: "100%" }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+
+              value={activeTab}
+              onChange={(_, newValue) => setActiveTab(newValue)}
+            >
+              <Tab  className="text-black" label="Pet Adoption Summary" />
+              <Tab className="text-yellow-500" label="Pending Requests" />
+              <Tab className="text-green-500" label="Approved Requests" />
+              <Tab className="text-red-500" label="Rejected Requests" />
+            </Tabs>
+          </Box>
+          <TabPanel value={activeTab} index={0}>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {petSummaryColumns.map((column) => (
+                      <TableCell key={column.field}>
+                        {column.headerName}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {petAdoptionSummary.map((row) => (
+                    <TableRow key={row.petId}>
+                      {petSummaryColumns.map((column) => (
+                        <TableCell key={column.field}>
+                          {column.renderCell
+                            ? column.renderCell({ value: row[column.field] })
+                            : row[column.field]}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </TabPanel>
+          <TabPanel value={activeTab} index={1}>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell key={column.field}>
+                        {column.headerName}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {getFilteredRequests("PENDING").map((row) => (
+                    <TableRow key={row._id}>
+                      {columns.map((column) => (
+                        <TableCell key={column.field}>
+                          {column.renderCell
+                            ? column.renderCell({
+                                row,
+                                value: row[column.field],
+                              })
+                            : row[column.field]}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </TabPanel>
+          <TabPanel value={activeTab} index={2}>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell key={column.field}>
+                        {column.headerName}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {getFilteredRequests("APPROVED").map((row) => (
+                    <TableRow key={row._id}>
+                      {columns.map((column) => (
+                        <TableCell key={column.field}>
+                          {column.renderCell
+                            ? column.renderCell({
+                                row,
+                                value: row[column.field],
+                              })
+                            : row[column.field]}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </TabPanel>
+          <TabPanel value={activeTab} index={3}>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell key={column.field}>
+                        {column.headerName}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {getFilteredRequests("REJECTED").map((row) => (
+                    <TableRow key={row._id}>
+                      {columns.map((column) => (
+                        <TableCell key={column.field}>
+                          {column.renderCell
+                            ? column.renderCell({
+                                row,
+                                value: row[column.field],
+                              })
+                            : row[column.field]}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </TabPanel>
         </Box>
-        <CustomTabPanel value={value} index={0}>
-         helo
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={1}>
-          helo
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={2}>
-       helo
-        </CustomTabPanel>
-      </Box>
+      )}
+      <Dialog open={isModalVisible} onClose={handleCancel}>
+        <DialogTitle>Enter a comment</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="comment"
+            label="Comment"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel}>Cancel</Button>
+          <Button onClick={handleOk}>
+            {newStatus === "APPROVED" ? "Approve" : "Reject"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={viewModalVisible}
+        onClose={() => setViewModalVisible(false)}
+      >
+        <DialogTitle>Request Details</DialogTitle>
+        <DialogContent>
+          {selectedRequest && (
+            <DialogContentText>
+              <Typography>
+                <strong>Pet Name:</strong> {selectedRequest.petName}
+              </Typography>
+              <Typography>
+                <strong>Status:</strong> {selectedRequest.status}
+              </Typography>
+              <Typography>
+                <strong>Request Date:</strong>{" "}
+                {new Date(selectedRequest.requestDate).toLocaleDateString()}
+              </Typography>
+              <Typography>
+                <strong>Comment:</strong> {selectedRequest.comment}
+              </Typography>
+              {selectedRequest.adoptionDate && (
+                <Typography>
+                  <strong>Adoption Date:</strong>{" "}
+                  {new Date(selectedRequest.adoptionDate).toLocaleDateString()}
+                </Typography>
+              )}
+            </DialogContentText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewModalVisible(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
+    </div>
     </div>
   );
-}
+};
 
 export default AdoptableManagement;
->>>>>>> 8ff740cf28a094cbbed4b23e55566a1220e4de2f
