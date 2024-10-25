@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { createHealthCheck } from "@/lib/features/pet/HealthCheckSlice";
-import { CheckingTypeShelterStaff, HealthStatus } from "../../enum";
+import { CheckingTypeShelterStaff, HealthStatus } from "../../enums";
 
 interface DecodedToken {
   id: string;

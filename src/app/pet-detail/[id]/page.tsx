@@ -1,130 +1,57 @@
 "use client";
-import React, { useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-
+import React, { useEffect, useState } from "react";
 import { Button, Modal } from "antd";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "../../../lib/hook";
+import { fetchPetById } from "../../../lib/features/pet/petSlice";
+import AdoptionRequest from "@/app/adoption-request/page";
 
+const PetDetail = () => {
+  const [OpenAdoptionRequest, setCreateAdoptionRequest] = useState(false);
+  const [loading, setLoading] = useState(false); // Khai báo trạng thái loading
 
-function PetDetail() {
-  const [isAnimating] = useState(true);
-  const router = useRouter();
-  const [openAddPetModal, setOpenAddPetModal] = useState(false);
-  const showAddPetModal = () => {
-   setOpenAddPetModal(true); // Mở modal AddPet
- };
- const handleCancelAddPet = () => {
-   setOpenAddPetModal(false); // Đóng modal AddPet
- };
- const handleOkAddPet = () => {
-   
-   setTimeout(() => {
-     
-     setOpenAddPetModal(false); // Đóng modal sau khi xử lý xong
-   }, 3000);
- };
-  const petDetail = [
-    {
-      id: 1,
-      name: "Miti",
-      gender: "Đực",
-      age: "Trưởng thành",
-      vaccination: "Có",
-      image: "/images/pet1.jpeg",
-      color: "white",
-      petcode: "PET777",
-      note: "Bị chủ bỏ rơi",
-      description:
-        "là chú chó ngoan, không cắn người, thích giao lưu với các con chó cái, fuckdog Sài Gòn",
-    },
-  ];
-  const morepetData = [
-    {
-      id: 2,
-      name: "Bella",
-      gender: "Female",
-      age: "Puppy",
-      vaccination: "Yes",
-      image: "/images/pet2.jpeg",
-      color: "Brown",
-      petcode: "PET778",
-      note: "Rescued from the street",
-      description:
-        "Bella is a young, playful puppy with a love for attention. She was rescued and is now looking for a forever home.",
-    },
-    {
-      id: 3,
-      name: "Max",
-      gender: "Male",
-      age: "Senior",
-      vaccination: "No",
-      image: "/images/pet3.jpeg",
-      color: "Black",
-      petcode: "PET779",
-      note: "Needs special care",
-      description:
-        "Max is an older dog who requires extra care and attention. He is calm and enjoys lounging in quiet spaces.",
-    },
-    {
-      id: 4,
-      name: "Lucy",
-      gender: "Female",
-      age: "Adult",
-      vaccination: "Yes",
-      image: "/images/pet4.jpeg",
-      color: "Golden",
-      petcode: "PET780",
-      note: "Friendly with other pets",
-      description:
-        "Lucy is a sociable and active dog who loves being around other animals. She is looking for a loving family.",
-    },
-    {
-      id: 5,
-      name: "Charlie",
-      gender: "Male",
-      age: "Puppy",
-      vaccination: "No",
-      image: "/images/pet5.jpeg",
-      color: "Gray",
-      petcode: "PET781",
-      note: "Energetic and playful",
-      description:
-        "Charlie is a lively puppy full of energy. He needs a home where he can run and play all day long.",
-    },
-    {
-      id: 6,
-      name: "Daisy",
-      gender: "Female",
-      age: "Adult",
-      vaccination: "Yes",
-      image: "/images/pet6.jpeg",
-      color: "White and Brown",
-      petcode: "PET782",
-      note: "Rescued from neglect",
-      description:
-        "Daisy is a gentle and affectionate dog who was rescued from a neglectful situation. She is now ready to trust and love again.",
-    },
-  ];
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const petsPerPage = 4;
-
-  const handlePrevClick = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0
-        ? Math.max(morepetData.length - petsPerPage, 0)
-        : prevIndex - petsPerPage
-    );
+  const showAdoptPetModal = () => {
+    setCreateAdoptionRequest(true); // Mở modal
   };
 
-  const handleNextClick = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex + petsPerPage >= morepetData.length
-        ? 0
-        : prevIndex + petsPerPage
-    );
+  const handleCancelCreateAdoptionRequest = () => {
+    setCreateAdoptionRequest(false); // Đóng modal
   };
 
-  const morePets = morepetData.slice(currentIndex, currentIndex + petsPerPage);
+  const handleOkAdoptPet = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setCreateAdoptionRequest(false); // Đóng modal sau khi xử lý xong
+    }, 3000);
+  };
+
+  const [isAnimating, setIsAnimating] = useState(true);
+  const params = useParams();
+  const id = params.id as string;
+  const dispatch = useAppDispatch();
+  const { currentPet, status, error } = useAppSelector((state) => state.pets);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchPetById(id));
+    }
+    const timer = setTimeout(() => setIsAnimating(false), 4000);
+    return () => clearTimeout(timer);
+  }, [id, dispatch]);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "failed") {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!currentPet) {
+    return <div>Pet not found</div>;
+  }
   return (
     <div className="mt-[148px]">
       <div
@@ -148,74 +75,74 @@ function PetDetail() {
         </div>
       </div>
       <div className="flex gap-4 mt-[20px] mx-[200px]">
-        {petDetail.map((pet) => (
-          <>
-            {/* Col span 1: Hiển thị ảnh */}
-            <div className="w-[40%] ml-[200px] ">
-              <img
-                src={pet.image}
-                alt={pet.name}
-                className="w-[100%] h-auto rounded-[5px] ml-[-200px]"
-              />
-            </div>
+        <div className="w-[40%] ml-[200px] ">
+          <img
+            src={currentPet.image}
+            alt={currentPet.name}
+            className="w-[100%] h-auto rounded-[5px] ml-[-200px]"
+          />
+        </div>
 
-            {/* Col span 2: Hiển thị thông tin */}
-            <div className="w-[70%] ml-[-120px]">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-[34px] font-medium">{pet.name}</h1>
-                <hr className="border-t-[1px] border-dashed border-[#adacac] " />
-                <div className="flex my-1 ">
-                  <p className="font-semibold">Age: </p>
-                  <p className="px-1 ">{pet.age}</p>
-                </div>
-                <hr className="border-t-[1px] border-dashed border-[#adacac] " />
-                <div className="flex my-1 ">
-                  <p className="font-semibold">PetCode: </p>
-                  <p className="px-1 ">{pet.petcode}</p>
-                </div>
-                <hr className="border-t-[1px] border-dashed border-[#adacac] " />
-                <div className="flex my-1 ">
-                  <p className="font-semibold">Gender: </p>
-                  <p className="px-1 ">{pet.gender}</p>
-                </div>
-                <hr className="border-t-[1px] border-dashed border-[#adacac] " />
-                <div className="flex my-1 ">
-                  <p className="font-semibold">Age: </p>
-                  <p className="px-1 ">{pet.age}</p>
-                </div>
-                <hr className="border-t-[1px] border-dashed border-[#adacac] " />
-                <div className="flex my-1 ">
-                  <p className="font-semibold">Vaccinated: </p>
-                  <p className="px-1 ">{pet.vaccination}</p>
-                </div>
-                <hr className="border-t-[1px] border-dashed border-[#adacac] " />
-                <div className="flex my-1 ">
-                  <p className="font-semibold">Color: </p>
-                  <p className="px-1 ">{pet.color}</p>
-                </div>
-                <div className="flex gap-4">
-                  <button   onClick={showAddPetModal}  className="relative border-2 border-gray-800 rounded-[5px] bg-transparent py-2.5 px-10 font-medium uppercase text-gray-800 transition-colors before:absolute before:left-0 before:top-0 before:-z-10 before:h-full before:w-full before:origin-top-left before:scale-x-0 before:bg-pink-500 before:transition-transform before:duration-300 before:content-[''] hover:text-white before:hover:scale-x-100">
-                    Adopt
-                  </button>
-                  <Modal
-                        open={openAddPetModal}
-                        title="You want to adopt this pet ?"
-                        onOk={handleOkAddPet}
-                        onCancel={handleCancelAddPet}
-                        footer={[
-                          <Button key="cancel" onClick={handleCancelAddPet}>
-                            Cancel
-                          </Button>,
-                        
-                        ]}
-                      >
-                        
-                      </Modal>
-                </div>
-              </div>
+        <div className="w-[70%] ml-[-120px]">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-[34px] font-medium">{currentPet.name}</h1>
+            <hr className="border-t-[1px] border-dashed border-[#adacac] " />
+            <div className="flex my-1 ">
+              <p className="font-semibold">Age: </p>
+              <p className="px-1 ">{currentPet.age}</p>
             </div>
-          </>
-        ))}
+            <hr className="border-t-[1px] border-dashed border-[#adacac] " />
+            <div className="flex my-1 ">
+              <p className="font-semibold">Location Found: </p>
+              <p className="px-1 ">{currentPet.locationFound}</p>
+            </div>
+            <hr className="border-t-[1px] border-dashed border-[#adacac] " />
+            <div className="flex my-1 ">
+              <p className="font-semibold">Gender: </p>
+              <p className="px-1 ">{currentPet.gender}</p>
+            </div>
+            <hr className="border-t-[1px] border-dashed border-[#adacac] " />
+            <div className="flex my-1 ">
+              <p className="font-semibold">Vaccinated: </p>
+              <p className="px-1 ">{currentPet.isVacinted ? "Yes" : "No"}</p>
+            </div>
+            <hr className="border-t-[1px] border-dashed border-[#adacac] " />
+            <div className="flex my-1 ">
+              <p className="font-semibold">Color: </p>
+              <p className="px-1 ">{currentPet.color}</p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={showAdoptPetModal}
+                className="relative border-2 border-gray-800 rounded-[5px] bg-transparent py-2.5 px-10 font-medium uppercase text-gray-800 transition-colors before:absolute before:left-0 before:top-0 before:-z-10 before:h-full before:w-full before:origin-top-left before:scale-x-0 before:bg-pink-500 before:transition-transform before:duration-300 before:content-[''] hover:text-white before:hover:scale-x-100"
+              >
+                Adopt
+              </button>
+              <Modal
+                open={OpenAdoptionRequest}
+                title="You want to adopt this pet ?"
+                className="text-[20px]"
+                onOk={handleOkAdoptPet}
+                onCancel={handleCancelCreateAdoptionRequest}
+                footer={[
+                  <Button
+                    key="cancel"
+                    onClick={handleCancelCreateAdoptionRequest}
+                  >
+                    Cancel
+                  </Button>,
+                ]}
+              >
+                <AdoptionRequest petId={currentPet._id} />
+              </Modal>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-10 ml-[200px]">
+        <h1 className="text-[34px] font-medium">Information</h1>
+        <hr className="border-1 border-gray-600 w-[50px]" />
+        <p className="mt-6">{currentPet.description}</p>
       </div>
       <div className="mt-10 ml-[200px]">
         <h1 className="text-[34px] font-medium">Information</h1>
@@ -448,61 +375,9 @@ function PetDetail() {
             className="transform rotate-12"
           />
         </div>
-
-        <div className="w-[1111px] h-[581px] bg-white mx-auto shadow-lg rounded-lg p-8 relative mt-5">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={handlePrevClick}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-300 p-3 rounded-full hover:bg-gray-400"
-            >
-              &#9664;
-            </button>
-
-            <div className="flex justify-center gap-14">
-              {morePets.map((pet) => (
-                <div key={pet.id} className="text-center w-[220px] mx-auto">
-                  <Image
-                    src={pet.image}
-                    alt={pet.name}
-                    width={220}
-                    height={220}
-                    className="rounded-md"
-                  />
-                  <h3 className="text-lg font-bold mt-4">{pet.name}</h3>
-                  <hr className="border-1 border-gray-300 my-2 w-[60px] mx-auto" />
-                  <p className="text-gray-600 font-semibold">
-                    Giới tính: {pet.gender}
-                  </p>
-                  <p className="text-gray-600 font-semibold">Tuổi: {pet.age}</p>
-                  <p className="text-gray-600 font-semibold">
-                    Tiêm phòng: {pet.vaccination}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={handleNextClick}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-300 p-3 rounded-full hover:bg-gray-400 "
-            >
-              &#9654;
-            </button>
-          </div>
-
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => {
-                router.push("/adopt");
-              }}
-              className="bg-pink-600 text-white py-3 px-20 rounded-full font-semibold hover:bg-[#018AE0] mt-10"
-            >
-              ADOPT
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
-}
+};
 
 export default PetDetail;
