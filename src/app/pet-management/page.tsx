@@ -124,11 +124,6 @@ const PetManagement = () => {
       key: "breed",
     },
     {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-    },
-    {
       title: "Delivery Status",
       dataIndex: "deliveryStatus",
       key: "deliveryStatus",

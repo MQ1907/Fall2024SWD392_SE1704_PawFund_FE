@@ -12,7 +12,6 @@ export const createPet = createAsyncThunk(
       image: string;
       color: string;
       breed: string;
-      age: number;
       note: string;
       rescueBy: string;
       rescueFee: number;
@@ -46,7 +45,6 @@ export const fetchPets = createAsyncThunk("pet/fetchAll", async () => {
       name: pet.name,
       image: pet.image,
       breed: pet.breed,
-      age: pet.age,
       color: pet.color,
       gender: pet.gender,
       rescueDate: pet.rescueDate,
@@ -77,7 +75,6 @@ export const updatePet = createAsyncThunk(
         description?: string;
         color?: string;
         breed: string;
-        age: number;
         gender: string;
         note?: string;
         isVaccinated?: boolean;
@@ -126,9 +123,9 @@ export const fetchPetById = createAsyncThunk(
       const response = await axios.get(
         `http://localhost:8000/pet/find-by-id/${id}`
       );
-      const { name, image, breed, age, description, isVacinted , color,gender,locationFound } =
+      const { name, image, breed, description, isVacinted , color,gender,locationFound } =
         response.data;
-      return { name, image, breed, age, description, isVacinted ,color,gender,locationFound };
+      return { name, image, breed, description, isVacinted ,color,gender,locationFound };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch pet"
@@ -198,7 +195,6 @@ interface Pet {
   name: string;
   image: string;
   breed: string;
-  age: number;
   description: string;
   isVacinted: boolean;
   deliveryStatus: string; // Changed from petStatus to deliveryStatus
