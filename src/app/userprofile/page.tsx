@@ -1,13 +1,16 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+
 interface DecodedToken {
   id: string;
   exp: number;
   iat: number;
 }
+
 interface UserData {
   name: string;
   email: string;
@@ -16,10 +19,20 @@ interface UserData {
   role: string;
   address: string;
 }
+
+interface ValidationErrors {
+  name?: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
+}
+
 const UserProfilePage = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<UserData | null>(null);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem("token");
@@ -27,6 +40,7 @@ const UserProfilePage = () => {
         try {
           const decodedToken = jwtDecode<DecodedToken>(token);
           const userId = decodedToken.id;
+
           const response = await axios.get(
             `http://localhost:8000/users/${userId}`
           );
@@ -37,28 +51,62 @@ const UserProfilePage = () => {
         }
       }
     };
+
     fetchUserData();
   }, []);
+
   const handleEdit = () => {
     setIsEditing(true);
   };
+
   const handleCancel = () => {
     setIsEditing(false);
     setEditedData(userData);
   };
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    if (!editedData) return false;
+    
+    if (!editedData.name.trim()) newErrors.name = "Name is required";
+    else if (editedData.name.length < 2) newErrors.name = "Name must be at least 2 characters long";
+    
+    if (!editedData.email.trim()) newErrors.email = "Email is required";
+    else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(editedData.email)) newErrors.email = "Invalid email format";
+    }
+    
+    if (editedData.phone && !/^\d{10,}$/.test(editedData.phone)) newErrors.phone = "Phone number must have at least 10 digits";
+    
+    if (editedData.avatar && !editedData.avatar.startsWith('http')) newErrors.avatar = "Avatar URL must start with http";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
     if (!editedData) return;
+
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
+
       const decodedToken = jwtDecode<DecodedToken>(token);
       const userId = decodedToken.id;
+
       console.log(
         "Sending request to:",
         `http://localhost:8000/users/${userId}`
       );
       console.log("Data being sent:", editedData);
-      // Gửi request PUT để cập nhật dữ liệu trong backend
+
+     
       const response = await axios.put(
         `http://localhost:8000/users/${userId}`,
         editedData,
@@ -69,9 +117,9 @@ const UserProfilePage = () => {
           },
         }
       );
-      // Kiểm tra response từ server
+
       if (response.status === 200) {
-        // Cập nhật state với dữ liệu mới
+        
         setUserData(response.data);
         setIsEditing(false);
         alert("Profile updated successfully!");
@@ -95,18 +143,23 @@ const UserProfilePage = () => {
       }
     }
   };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editedData) return;
     setEditedData({ ...editedData, [e.target.name]: e.target.value });
+    // Clear the error for this field when the user starts typing
+    setErrors({ ...errors, [e.target.name]: undefined });
   };
+
   if (!userData) {
     return <div>Loading...</div>;
   }
+
   return (
     <div className="container mx-auto px-4 py-8 mt-36">
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         <div className="relative h-48 bg-gradient-to-r from-blue-500 to-purple-500">
-          <Image
+          <img
             className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-32 h-32 rounded-full border-4 border-white"
             src={userData.avatar || "/images/unknownUser.jpg"}
             alt="Profile Picture"
@@ -123,46 +176,60 @@ const UserProfilePage = () => {
               }}
               className="space-y-4"
             >
-              <input
-                type="text"
-                name="name"
-                value={editedData?.name || ""}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200"
-              />
-              <input
-                type="email"
-                name="email"
-                value={editedData?.email || ""}
-                onChange={handleChange}
-                placeholder="Email Address"
-                className="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200"
-              />
-              <input
-                type="tel"
-                name="phone"
-                value={editedData?.phone || ""}
-                onChange={handleChange}
-                placeholder="Phone Number"
-                className="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200"
-              />
-              <input
-                type="text"
-                name="address"
-                value={editedData?.address || ""}
-                onChange={handleChange}
-                placeholder="Address"
-                className="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200"
-              />
-              <input
-                type="text"
-                name="avatar"
-                value={editedData?.avatar || ""}
-                onChange={handleChange}
-                placeholder="Avatar URL"
-                className="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200"
-              />
+              <div>
+                <input
+                  type="text"
+                  name="name"
+                  value={editedData?.name || ""}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  className={`block w-full px-4 py-2 rounded-md border ${errors.name ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200`}
+                />
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              </div>
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  value={editedData?.email || ""}
+                  onChange={handleChange}
+                  placeholder="Email Address"
+                  className={`block w-full px-4 py-2 rounded-md border ${errors.email ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200`}
+                />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              </div>
+              <div>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={editedData?.phone || ""}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  className={`block w-full px-4 py-2 rounded-md border ${errors.phone ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200`}
+                />
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  name="address"
+                  value={editedData?.address || ""}
+                  onChange={handleChange}
+                  placeholder="Address"
+                  className="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  name="avatar"
+                  value={editedData?.avatar || ""}
+                  onChange={handleChange}
+                  placeholder="Avatar URL"
+                  className={`block w-full px-4 py-2 rounded-md border ${errors.avatar ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition duration-200`}
+                />
+                {errors.avatar && <p className="text-red-500 text-sm mt-1">{errors.avatar}</p>}
+              </div>
               <div className="mt-4">
                 <button
                   type="submit"
@@ -210,4 +277,5 @@ const UserProfilePage = () => {
     </div>
   );
 };
+
 export default UserProfilePage;
